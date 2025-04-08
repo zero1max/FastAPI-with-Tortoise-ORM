@@ -26,6 +26,12 @@ async def shutdown():
     print("DB DisConnected ❌")
 
 
+@app.get("/users", response_model=BaseResponse)
+async def get_users():
+    users = await User.all()
+    data = users
+    return BaseResponse(data=data)
+
 @app.post("/user", response_model=BaseResponse)
 async def create_user(user: BaseUser):
     user_data = await User.create(
@@ -40,3 +46,4 @@ async def create_user(user: BaseUser):
         "password": user_data.password
     }
     return BaseResponse(data=data)
+
