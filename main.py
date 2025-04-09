@@ -1,9 +1,10 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, HTTPException
 from db import init_db
 from config import get_settings
-from schemas.user import BaseUser
+from schemas.user import BaseUser, UserOut
 from schemas.base import BaseResponse
 from models.user import User
+from tortoise import Tortoise
 
 settings = get_settings()
 
@@ -22,28 +23,48 @@ async def startup():
 
 @app.on_event("shutdown")
 async def shutdown():
-    await init_db()
-    print("DB DisConnected ❌")
+    await Tortoise.close_connections()
+    print("DB Disconnected ❌")
 
 
 @app.get("/users", response_model=BaseResponse)
 async def get_users():
     users = await User.all()
-    data = users
-    return BaseResponse(data=data)
+    user_list = [UserOut.model_validate(user) for user in users]
+    return BaseResponse(status=True, data=user_list)
+
 
 @app.post("/user", response_model=BaseResponse)
 async def create_user(user: BaseUser):
     user_data = await User.create(
         email=user.email,
         username=user.username,
-        password=user.password
+        password=user.password  
     )
 
     data = {
         "email": user_data.email,
         "username": user_data.username,
-        "password": user_data.password
     }
     return BaseResponse(data=data)
 
+@app.put("/users/{user_id}", response_model=BaseResponse)
+async def update_user(user_id: int, user_data: BaseUser):
+    user = await User.get_or_none(id=user_id)
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+
+    user.username = user_data.username
+    user.email = user_data.email
+    await user.save()
+
+    return BaseResponse(status=True, data=UserOut.model_validate(user))
+
+@app.delete("/users/{user_id}", response_model=BaseResponse)
+async def delete_user(user_id: int):
+    user = await User.get_or_none(id=user_id)
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+
+    await user.delete()
+    return BaseResponse(status=True, data=f"User {user_id} deleted")
