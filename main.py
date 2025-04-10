@@ -6,6 +6,7 @@ from schemas.base import BaseResponse
 from models.user import User
 from tortoise import Tortoise
 
+
 settings = get_settings()
 
 app = FastAPI(
@@ -15,6 +16,7 @@ app = FastAPI(
     debug=settings.app_debug,
 )
 
+# ----------------------------------------------------
 
 @app.on_event("startup")
 async def startup():
@@ -26,6 +28,7 @@ async def shutdown():
     await Tortoise.close_connections()
     print("DB Disconnected ❌")
 
+# ----------------------------------------------------
 
 @app.get("/users", response_model=BaseResponse)
 async def get_users():
