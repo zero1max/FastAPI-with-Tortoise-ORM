@@ -7,19 +7,40 @@ on:
     branches: [ "main" ]
 
 jobs:
-  deploy_fastapi:
+  ci_fastapi:
     runs-on: ubuntu-latest
 
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
 
-      - name: Deploy FastAPI via SSH key
-        uses: appleboy/ssh-action@v0.1.8
+      - name: Set up Python
+        uses: actions/setup-python@v4
         with:
-          host: ${{ secrets.SERVER_HOST }}
-          username: ${{ secrets.SERVER_USER }}
-          key: ${{ secrets.SERVER_SSH_KEY }}
-          script: |
-            cd /home/api-orm-book
-            git pull origin main
+          python-version: 3.11  
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Run Tests
+        run: |
+          pip install pytest
+          pytest
+  # deploy_fastapi:
+  #   runs-on: ubuntu-latest
+
+  #   steps:
+  #     - name: Checkout repository
+  #       uses: actions/checkout@v3
+
+  #     - name: Deploy FastAPI via SSH key
+  #       uses: appleboy/ssh-action@v0.1.8
+  #       with:
+  #         host: ${{ secrets.SERVER_HOST }}
+  #         username: ${{ secrets.SERVER_USER }}
+  #         key: ${{ secrets.SERVER_SSH_KEY }}
+  #         script: |
+  #           cd /home/api-orm-book
+  #           git pull origin main
