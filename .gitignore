@@ -3,3 +3,4 @@ venv
 .env
 migrations
 pyproject.toml
+tor_orm.db
