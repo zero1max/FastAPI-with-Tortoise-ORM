@@ -2,11 +2,9 @@ import pytest
 import pytest_asyncio
 from fastapi.testclient import TestClient
 from tortoise import Tortoise
-from tortoise.exceptions import IntegrityError
 
 from main import app
 from models.user import User
-from schemas.user import BaseUser, UserOut
 
 # Initialize the TestClient
 client = TestClient(app)
